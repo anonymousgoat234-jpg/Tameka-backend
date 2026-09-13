@@ -1,0 +1,23 @@
+name: Keep Tameka Warm
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch: {}
+
+jobs:
+  keep-warm:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Render backend
+        run: |
+          curl -sS -o /dev/null -w "Render /ping status: %{http_code}\n" \
+            "${{ secrets.RENDER_URL }}/ping" || echo "Render ping failed"
+
+      - name: Ping Supabase
+        run: |
+          curl -sS -o /dev/null -w "Supabase status: %{http_code}\n" \
+            "${{ secrets.SUPABASE_URL }}/rest/v1/conversations?select=id&limit=1" \
+            -H "apikey: ${{ secrets.SUPABASE_KEY }}" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_KEY }}" \
+            || echo "Supabase ping failed"
